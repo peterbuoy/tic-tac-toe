@@ -1,39 +1,41 @@
 const GAMEBOARD = document.getElementById('gameboard');
 
-let gameboardArray = [['x', 'o', 'x'],
-                      ['o', 'x', 'o'],
-                      ['x', 'o', 'x']]
+let boardArray = [['', '', ''],
+                  ['', '', ''],
+                  ['', '', '']]
+let playerFill = 'x';
 
-const displayController = (function() {
-  gameboardFragment = document.createDocumentFragment();
-  while(GAMEBOARD.firstChild) {
-    GAMEBOARD.firstChild.remove();
+const clickSquare = (event) => {
+  let [row, col] = event.currentTarget.value.split(',');
+  row = parseInt(row);
+  col = parseInt(col);
+  if (boardArray[row][col] != "") return alert('Square already filled!');
+  playerFill == 'x' ? playerFill = 'o' : playerFill = 'x'
+  boardArray[row][col] = playerFill;
+  displayController.updateBoard();
+  if(winnerExists()) {
+    displayController.newBoard();
+    return alert(`${playerFill} wins!`)
   }
-  for(let i = 0; i < 3; i++) {
-    for(let j = 0; j < 3; j++) {
-      let square = document.createElement('button');
-      square.textContent = gameboardArray[i][j];
-      square.classList.add('square')
-      square.value = [i,j];
-      gameboardFragment.append(square)
-    }
-  }
-  GAMEBOARD.append(gameboardFragment);
-})();
+}
 
-const checkBoard = (gameboard) => {
+// if a winner exists, return true
+const winnerExists = () => {
   const checkRows = () => {
     for (let row = 0; row < 3; row++) {
-      if(gameboard[row].every(square => (square === gameboard[row][0]))) {
-        console.log('row win');
+      if ( boardArray[row][0] != "" 
+        && boardArray[row].every(square => (square === boardArray[row][0]))) 
+      {
+        console.log('row win!');
         return true;
       }
     }
   }
-  const checkCol = () => {
+  const checkCols = () => {
     for (let col = 0; col < 3; col++) {
-      if (gameboard[0][col] == gameboard[1][col] 
-        &&gameboard[0][col] == gameboard[2][col]) 
+      if ( boardArray[0][col] != ""
+        && boardArray[0][col] == boardArray[1][col] 
+        && boardArray[0][col] == boardArray[2][col]) 
         {
           console.log('col win!');
           return true;
@@ -42,40 +44,56 @@ const checkBoard = (gameboard) => {
   }
   const checkCross = () => {
     for (let row = 0; row < 3; row++) {
-      if (gameboard[0][0] == gameboard[1][1] && gameboard[0][0] == gameboard[2][2]
-        ||gameboard[2][0] == gameboard[1][1] && gameboard[0][2] == gameboard[1][1]) {
-          console.log('cross win!');
+      if (boardArray[1][1] != "" 
+          && (boardArray[1][1] == boardArray[0][0] && boardArray[1][1] == boardArray[2][2]
+          || boardArray[1][1] == boardArray[2][0] && boardArray[1][1] == boardArray[0][2])) 
+      {
+        console.log('cross win!');
         return true;
       }
     }
   }
-  checkCross();
-  checkRows();
-  checkCol();
+  return checkRows() || checkCols() || checkCross();
 }
 
-const gameBoard = (function() {
-  function setCurrentPlayer() {
-
+const displayController = (function() {
+  const updateBoard = () => {
+    console.log('board updated');
+    gameboardFragment = document.createDocumentFragment();
+    while(GAMEBOARD.firstChild) {
+      GAMEBOARD.firstChild.remove();
+    }
+    for(let i = 0; i < 3; i++) {
+      for(let j = 0; j < 3; j++) {
+        let square = document.createElement('button');
+        square.textContent = boardArray[i][j];
+        square.classList.add('square')
+        square.value = [i,j];
+        gameboardFragment.append(square)
+      }
+    }
+    GAMEBOARD.append(gameboardFragment);
+    const SQUARES = document.querySelectorAll('.square')
+    console.log(SQUARES);
+    SQUARES.forEach(square => square.addEventListener('click', clickSquare));
   }
+  const newBoard = () => {
+    console.log('new board or something');
+    boardArray.forEach(boardRow => boardRow = boardRow.fill(""));
+    console.log(boardArray);
+    updateBoard();
+  }
+  return {newBoard, updateBoard}
+}
+)();
+
+const playerFactory = (name, fillValue) => {
+  return {name, fillValue}
+}
+
+const gameboard = (function() {
+  console.log('gameboard initialization');
+  displayController.newBoard();
+  displayController.updateBoard();
 })();
 
-// fillValue is "x" or "o"
-const Player = (name, fillValue) => {
-  
-}
-
-const testClick = (event) => {
-  event.currentTarget.style.backgroundColor = 'red';
-  console.log('click detected');
-}
-
-const SQUARES = document.querySelectorAll('.square')
-console.log(SQUARES);
-SQUARES.forEach(square => square.addEventListener('click', testClick))
-checkBoard(gameboardArray);
- 
-// game logic while loop should keep going until 
-// there are no empty strings in gameboardArray
-// gameboardArray.includes("");
-// OR 3 X's or O's in a row (multiple ways to check)
