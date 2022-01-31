@@ -17,7 +17,7 @@ const clickSquare = (event) => {
     displayController.newBoard();
     return alert(`${playerFill} wins!`)
   }
-  if(boardArray.flat().includes('')) {
+  if(boardArray.flat().filter(value => value == '').length == 0) {
     return alert(`You can't even beat yourself off. Give up on your dreams and die.`)
   }
 }
